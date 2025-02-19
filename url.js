@@ -15,23 +15,20 @@ const urls = [
     'https://www.surveycake.com/s/yWbQD'
 ];
 
-let availableSurveys = []; // 存放可用問卷
-
 // 檢查問卷是否可用
 async function checkSurvey(url) {
     try {
-        // 先檢查 HTTP 狀態碼，避免跳轉到無效頁面
         const response = await fetch(url);
+
         if (!response.ok) {
             console.log(`❌ ${url} 不可用 (HTTP ${response.status})`);
             return false;
         }
 
-        // 取得完整頁面內容並轉換為純文字
         const text = await response.text();
 
-        // 檢查 HTML 是否包含「本問卷已額滿」
-        if (text.includes("本問卷已額滿")) {
+        // 使用更精確的檢查方式來判斷是否額滿
+        if (text.includes("本問卷已額滿") || text.includes("問卷已截止") || text.includes("This survey is closed")) {
             console.log(`❌ ${url} 已額滿`);
             return false;
         }
@@ -46,16 +43,13 @@ async function checkSurvey(url) {
 
 // **等待所有問卷檢查完成後，再隨機選擇**
 async function findAvailableSurveys() {
-    // **使用 Promise.all 讓所有檢查同時執行**
-    const checkResults = await Promise.all(urls.map(async (url) => {
-        if (await checkSurvey(url)) {
-            availableSurveys.push(url);
-        }
-    }));
+    // 使用 Promise.all 讓所有檢查同時執行，並過濾出可用問卷
+    const availableSurveys = (await Promise.all(
+        urls.map(async (url) => (await checkSurvey(url)) ? url : null)
+    )).filter(Boolean); // 過濾掉 null
 
-    // **確保有可用問卷**
     if (availableSurveys.length > 0) {
-        // **隨機選擇一個可用問卷**
+        // 隨機選擇一個可用問卷
         const randomUrl = availableSurveys[Math.floor(Math.random() * availableSurveys.length)];
         console.log(`🔀 隨機選擇: ${randomUrl}`);
         window.location.href = randomUrl; // 跳轉到問卷
