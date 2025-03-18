@@ -9,7 +9,10 @@
 
 // 問卷網址列表
 const urls = [
-       'http',   
+       'https://www.surveycake.com/s/46rkB',
+       'https://www.surveycake.com/s/860l7', 
+       'https://www.surveycake.com/s/v0vGe',
+       'https://www.surveycake.com/s/reGav', 
 ];
 
 // 隨機選擇一個 URL 並跳轉
